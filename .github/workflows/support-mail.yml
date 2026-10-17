@@ -1,0 +1,53 @@
+name: Support mailbox
+
+on:
+  schedule:
+    # Every 20 minutes, 11:00 to 02:59 UTC: about 7 a.m. to 11 p.m. Eastern (6 a.m. to 10 p.m. in winter).
+    # About 48 runs a day, roughly 1,500 of the 2,000 free private-repo minutes a month.
+    - cron: "*/20 11-23 * * *"
+    - cron: "*/20 0-2 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "run, check (log in only) or dry (read, change nothing)"
+        default: run
+        required: true
+
+concurrency:
+  group: support-mail
+  cancel-in-progress: false
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read support@ and work the outbox
+        env:
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          IMAP_HOST: ${{ vars.IMAP_HOST || 'imap.livemail.co.uk' }}
+          IMAP_PORT: ${{ vars.IMAP_PORT || '993' }}
+          SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.livemail.co.uk' }}
+          SMTP_PORT: ${{ vars.SMTP_PORT || '465' }}
+          SUPPORT_ENDPOINT: ${{ secrets.SUPPORT_ENDPOINT }}
+          SUPPORT_TOKEN: ${{ secrets.SUPPORT_TOKEN }}
+          SUPPORT_ADDRESS: ${{ vars.SUPPORT_ADDRESS || 'support@p2unlimited.com' }}
+          DRAFTS_FOLDER: ${{ vars.DRAFTS_FOLDER }}
+          SENT_FOLDER: ${{ vars.SENT_FOLDER }}
+          DRY_RUN: ${{ github.event.inputs.mode == 'dry' && '1' || '' }}
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "check" ]; then
+            python3 support_mail.py --check
+          else
+            python3 support_mail.py
+          fi
+
+  tests:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tests -v
