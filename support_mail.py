@@ -6,7 +6,7 @@ Support Desk outbox: approved replies are saved to Drafts (or sent, if the Desk'
 
 Standard library only. Configured by environment variables (GitHub Actions secrets):
   MAIL_USER, MAIL_PASSWORD           the support@ mailbox login
-  IMAP_HOST, IMAP_PORT               default imap.livemail.co.uk, 993 (SSL)
+  IMAP_HOST, IMAP_PORT               default mail.livemail.co.uk, 993 (SSL)
   SMTP_HOST, SMTP_PORT               default smtp.livemail.co.uk, 465 (SSL); port 587 uses STARTTLS
   SUPPORT_ENDPOINT                   the Support Desk web app /exec link
   SUPPORT_TOKEN                      the Desk's SUPPORT_TOKEN
@@ -297,7 +297,7 @@ def run(dry: bool = False) -> dict:
     support = env("SUPPORT_ADDRESS", "support@p2unlimited.com").lower()
     name = env("SUPPORT_NAME", "P2UN Support")
     desk = Desk(env("SUPPORT_ENDPOINT"), env("SUPPORT_TOKEN"))
-    box = Mailbox(env("IMAP_HOST", "imap.livemail.co.uk"), int(env("IMAP_PORT", "993")), env("MAIL_USER"), env("MAIL_PASSWORD"))
+    box = Mailbox(env("IMAP_HOST", "mail.livemail.co.uk"), int(env("IMAP_PORT", "993")), env("MAIL_USER"), env("MAIL_PASSWORD"))
     stats = {"seen": 0, "logged": 0, "skipped": 0, "acked": 0, "replies": 0, "errors": 0}
     try:
         box.select_inbox()
@@ -377,7 +377,7 @@ def check() -> int:
     """Logs in everywhere and changes nothing."""
     ok = True
     try:
-        box = Mailbox(env("IMAP_HOST", "imap.livemail.co.uk"), int(env("IMAP_PORT", "993")), env("MAIL_USER"), env("MAIL_PASSWORD"))
+        box = Mailbox(env("IMAP_HOST", "mail.livemail.co.uk"), int(env("IMAP_PORT", "993")), env("MAIL_USER"), env("MAIL_PASSWORD"))
         box.select_inbox()
         box.find_folders()
         log(f"IMAP ok. Keywords {'on' if box.keywords_ok else 'off'}; Drafts={box.drafts or 'NOT FOUND'}; Sent={box.sent or 'NOT FOUND'}")

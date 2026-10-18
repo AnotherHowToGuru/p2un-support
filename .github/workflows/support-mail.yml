@@ -2,10 +2,9 @@ name: Support mailbox
 
 on:
   schedule:
-    # Every 20 minutes, 11:00 to 02:59 UTC: about 7 a.m. to 11 p.m. Eastern (6 a.m. to 10 p.m. in winter).
-    # About 48 runs a day, roughly 1,500 of the 2,000 free private-repo minutes a month.
-    - cron: "*/20 11-23 * * *"
-    - cron: "*/20 0-2 * * *"
+    # Every 2 hours, around the clock, at 7 minutes past (GitHub may start a run a few minutes late).
+    # 12 runs a day, roughly 370 of the 2,000 free private-repo minutes a month.
+    - cron: "7 */2 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -27,7 +26,7 @@ jobs:
         env:
           MAIL_USER: ${{ secrets.MAIL_USER }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          IMAP_HOST: ${{ vars.IMAP_HOST || 'imap.livemail.co.uk' }}
+          IMAP_HOST: ${{ vars.IMAP_HOST || 'mail.livemail.co.uk' }}
           IMAP_PORT: ${{ vars.IMAP_PORT || '993' }}
           SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.livemail.co.uk' }}
           SMTP_PORT: ${{ vars.SMTP_PORT || '465' }}
